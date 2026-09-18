@@ -1,0 +1,13 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class ImportLog extends Model
+{
+    use HasFactory;
+    protected $fillable = ['user_id', 'filename', 'total_rows', 'imported_rows', 'skipped_rows', 'errors'];
+    protected $casts = ['errors' => 'array'];
+}

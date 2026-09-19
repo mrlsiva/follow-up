@@ -2,6 +2,10 @@
 
 Integration guide for the Kotlin Android application.
 
+## Postman collection
+
+Import [Leadflow-API.postman_collection.json](Leadflow-API.postman_collection.json) into Postman to test the API. Set the collection `base_url` variable for another environment, run `Authentication > Login` first, and the returned Sanctum token will be saved automatically for protected requests.
+
 ## 1. Base URL
 
 Local development:
@@ -134,7 +138,7 @@ attachments[]=identity-card.jpg
 attachments[]=requirements.pdf
 ```
 
-For an existing lead, send the same multipart fields to `PUT /leads/{leadId}`. Android clients using Retrofit/OkHttp may send `POST /leads/{leadId}` with `_method=PUT` when multipart `PUT` is not supported by the client.
+For an existing lead, send the same JSON payload to `PUT /leads/{leadId}`, or use multipart form data when uploading files. Android clients using Retrofit/OkHttp may send `POST /leads/{leadId}` with `_method=PUT` when multipart `PUT` is not supported by the client.
 
 Uploaded files are returned in the `attachments` array with `original_name`, `mime_type`, `size`, `type`, and `path`.
 
@@ -219,6 +223,8 @@ POST /leads
 Content-Type: application/json
 ```
 
+JSON is supported when no files are being uploaded. To upload lead attachments, use `multipart/form-data` with the same field names and one or more `attachments[]` parts.
+
 ```json
 {
   "full_name": "Neha Sharma",
@@ -285,6 +291,8 @@ attachment=proposal.pdf
 `type` values: `Call`, `WhatsApp`, `Meeting`, `Email`.
 
 `status_after` may be: `New`, `Contacted`, `Interested`, `Follow-up`, `Converted`, or `Lost`.
+
+The `attachment` field is a single file part. Do not send this request as JSON when attaching a file.
 
 Success: `201` with the follow-up and its optional `attachment`. The lead's status and next follow-up are updated automatically.
 
@@ -509,13 +517,25 @@ interface LeadflowApi {
     suspend fun deleteLead(@Path("id") id: Long): MessageResponse
 
     @POST("leads/{id}/followups")
-    suspend fun addFollowup(@Path("id") id: Long, @Body request: FollowupRequest): Followup
+    @Multipart
+    suspend fun addFollowup(
+      @Path("id") id: Long,
+      @Part("followup_at") followupAt: RequestBody,
+      @Part("note") note: RequestBody,
+      @Part("type") type: RequestBody,
+      @Part("next_followup_at") nextFollowupAt: RequestBody?,
+      @Part("status_after") statusAfter: RequestBody?,
+      @Part attachment: MultipartBody.Part?
+    ): Followup
 
     @GET("followups/today")
     suspend fun todayFollowups(): List<Lead>
 
     @GET("lead-sources")
     suspend fun sources(): List<LeadSource>
+
+    @GET("lead-sources/{id}")
+    suspend fun source(@Path("id") id: Long): LeadSource
 
     @POST("lead-sources")
     suspend fun createSource(@Body request: NameColorRequest): LeadSource
@@ -528,6 +548,9 @@ interface LeadflowApi {
 
     @GET("services")
     suspend fun services(): List<Service>
+
+    @GET("services/{id}")
+    suspend fun service(@Path("id") id: Long): Service
 
     @POST("services")
     suspend fun createService(@Body request: NameRequest): Service

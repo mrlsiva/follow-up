@@ -24,7 +24,7 @@ class LeadController extends Controller
     public function update(Request $request, Lead $lead) { $lead->update($this->validated($request, $lead)); $this->storeLeadAttachments($request, $lead); return response()->json($lead->fresh(['source', 'service', 'attachments'])); }
     public function destroy(Lead $lead) { $lead->delete(); return response()->json(['message' => 'Lead deleted']); }
     public function followup(Request $request, Lead $lead) {
-        $data = $request->validate(['followup_at' => 'required|date', 'note' => 'required|string', 'type' => 'required|in:Call,WhatsApp,Meeting,Email', 'next_followup_at' => 'nullable|date', 'status_after' => 'nullable|string', 'attachment' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx']);
+        $data = $request->validate(['followup_at' => 'required|date', 'note' => 'required|string', 'type' => 'required|in:Call,WhatsApp,Meeting,Email', 'next_followup_at' => 'nullable|date', 'status_after' => 'nullable|in:New,Contacted,Interested,Follow-up,Converted,Lost', 'attachment' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx']);
         $file = $request->file('attachment'); unset($data['attachment']);
         $data['user_id'] = $request->user()->id; $followup = $lead->followups()->create($data);
         $this->storeFollowupAttachment($file, $followup);

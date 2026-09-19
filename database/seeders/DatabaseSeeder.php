@@ -17,8 +17,14 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $sources = ['Justdial', 'Meta Ads', 'Website', 'WhatsApp', 'Referral', 'Walk-in', 'IndiaMART', 'Google Ads', 'Other'];
-        foreach ($sources as $index => $name) LeadSource::create(['name' => $name, 'color' => ['#F4B942','#4DA3A7','#E9775B','#78A6D8'][$index % 4]]);
-        foreach (['Website', 'Mobile App', 'SEO', 'Digital Marketing', 'Billing Software', 'Custom Software'] as $name) Service::create(['name' => $name]);
-        User::create(['name' => 'Aarav Mehta', 'email' => 'admin@example.com', 'password' => 'password']);
+        foreach ($sources as $index => $name) LeadSource::updateOrCreate(
+            ['name' => $name],
+            ['color' => ['#F4B942','#4DA3A7','#E9775B','#78A6D8'][$index % 4]],
+        );
+        foreach (['Website', 'Mobile App', 'SEO', 'Digital Marketing', 'Billing Software', 'Custom Software'] as $name) Service::firstOrCreate(['name' => $name]);
+        User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            ['name' => 'Aarav Mehta', 'password' => 'password'],
+        );
     }
 }

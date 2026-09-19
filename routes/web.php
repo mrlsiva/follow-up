@@ -22,7 +22,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/leads/{lead}/edit', [DashboardController::class, 'edit'])->name('leads.edit');
     Route::put('/leads/{lead}', [DashboardController::class, 'update'])->name('leads.update');
     Route::delete('/leads/{lead}', [DashboardController::class, 'destroy'])->name('leads.destroy');
+    Route::delete('/leads/{lead}/attachments/{attachment}', [DashboardController::class, 'destroyAttachment'])->name('leads.attachments.destroy');
     Route::post('/leads/{lead}/followups', [DashboardController::class, 'followup'])->name('leads.followup');
+    Route::get('/leads/{lead}/followups/{followup}/attachment', [DashboardController::class, 'followupAttachment'])->name('leads.followups.attachment');
     Route::get('/settings/sources', [LookupController::class, 'sources'])->name('settings.sources');
     Route::get('/settings/services', [LookupController::class, 'services'])->name('settings.services');
     Route::get('/settings/{type}/create', [LookupController::class, 'create'])->name('settings.lookup.create');

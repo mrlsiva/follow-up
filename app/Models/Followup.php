@@ -12,4 +12,5 @@ class Followup extends Model
     protected $casts = ['followup_at' => 'datetime', 'next_followup_at' => 'datetime'];
     public function lead() { return $this->belongsTo(Lead::class); }
     public function user() { return $this->belongsTo(User::class); }
+    public function attachment() { return $this->hasOne(FollowupAttachment::class); }
 }

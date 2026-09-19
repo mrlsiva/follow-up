@@ -18,7 +18,7 @@ Production example:
 https://crm.example.com/api
 ```
 
-All requests and responses use JSON except bulk upload, which uses multipart form data.
+Most requests and responses use JSON. Lead and follow-up file uploads, plus bulk upload, use multipart form data.
 
 ## 2. Authentication
 
@@ -113,6 +113,30 @@ Other common responses:
 | `priority` | string | no | `High`, `Medium`, `Low` |
 | `next_followup_at` | ISO date | no | Example: `2026-09-20T14:30:00+05:30` |
 | `remarks` | string | no | |
+
+### Attachments
+
+Lead photos and documents are optional. Use `multipart/form-data` when uploading files. The field name is `attachments[]`, and multiple files may be sent in one request.
+
+Accepted file types: `.jpg`, `.jpeg`, `.png`, `.webp`, `.pdf`, `.doc`, `.docx`, `.xls`, `.xlsx`. Maximum size is 10 MB per file.
+
+Example lead upload:
+
+```text
+POST /leads
+Content-Type: multipart/form-data
+
+full_name=Neha Sharma
+mobile_number=9876543210
+status=New
+priority=High
+attachments[]=identity-card.jpg
+attachments[]=requirements.pdf
+```
+
+For an existing lead, send the same multipart fields to `PUT /leads/{leadId}`. Android clients using Retrofit/OkHttp may send `POST /leads/{leadId}` with `_method=PUT` when multipart `PUT` is not supported by the client.
+
+Uploaded files are returned in the `attachments` array with `original_name`, `mime_type`, `size`, `type`, and `path`.
 
 ## 5. Dashboard
 
@@ -244,24 +268,25 @@ Response `200`:
 
 ```http
 POST /leads/{leadId}/followups
-Content-Type: application/json
+Content-Type: multipart/form-data
 ```
 
-```json
-{
-  "followup_at": "2026-09-18T11:00:00+05:30",
-  "note": "Discussed the proposal. Client requested a revised timeline.",
-  "type": "Call",
-  "next_followup_at": "2026-09-21T15:00:00+05:30",
-  "status_after": "Follow-up"
-}
+```text
+followup_at=2026-09-18T11:00:00+05:30
+note=Discussed the proposal. Client requested a revised timeline.
+type=Call
+next_followup_at=2026-09-21T15:00:00+05:30
+status_after=Follow-up
+attachment=proposal.pdf
 ```
+
+`attachment` is optional and accepts one photo or document. Accepted file types are `.jpg`, `.jpeg`, `.png`, `.webp`, `.pdf`, `.doc`, `.docx`, `.xls`, and `.xlsx`; the maximum size is 10 MB.
 
 `type` values: `Call`, `WhatsApp`, `Meeting`, `Email`.
 
 `status_after` may be: `New`, `Contacted`, `Interested`, `Follow-up`, `Converted`, or `Lost`.
 
-Success: `201` with the follow-up. The lead's status and next follow-up are updated automatically.
+Success: `201` with the follow-up and its optional `attachment`. The lead's status and next follow-up are updated automatically.
 
 ### Today's follow-ups
 
